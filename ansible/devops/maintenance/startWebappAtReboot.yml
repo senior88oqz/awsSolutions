@@ -1,0 +1,38 @@
+---
+- hosts: ec2Demo
+  become: yes
+  vars:
+    # Vars can also be passed in via CLI with `--extra-vars="name=value"`.
+    node_apps_location: /home/ubuntu/node
+    pipeline_location: /home/ubuntu
+    solr_version: 7.4.0
+
+  tasks:
+    - name: Port forwarding
+      command: "sudo iptables -A PREROUTING -t nat -i eth0 -p tcp --dport 80 -j REDIRECT --to-port 9000"
+
+    - name: Run solr in cloud mode
+      shell: "./solr -c"
+      args:
+        chdir: "/opt/solr-{{ solr_version }}/bin"
+      register: foo
+      become_user: ubuntu
+    
+    - debug: msg="solr setup message {{ foo.stdout }}"
+
+    - name: Check list of running Node.js apps
+      command: forever list
+      register: forever_list
+      changed_when: false
+      become_user: ubuntu
+
+    - name: Start Node.js app
+      command: "forever start {{node_apps_location}}/lexx-core/dist/server/run.js"
+      # avoid start another running instance
+      when: "forever_list.stdout.find(node_apps_location + '/lexx-core/dist/server/run.js') == -1"
+      become_user: ubuntu
+
+
+    # # - command: "forever stopall"
+    
+      

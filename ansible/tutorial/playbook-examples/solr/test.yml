@@ -1,0 +1,15 @@
+---
+- hosts: all
+  tasks:
+    - name: export ENV
+      lineinfile:
+        dest: ~/.bash_profile
+        line: TEST='1234'
+    - name: source 
+      shell: "source ~/.bash_profile && echo $TEST"
+      register: foo
+
+    - name: debug
+      debug: msg="register value {{ foo.stdout }}"
+    
+    - debug: var=ansible_eth0

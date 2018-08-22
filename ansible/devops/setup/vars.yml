@@ -1,0 +1,4 @@
+download_dir: /tmp
+solr_dir: /usr/local/opt/solr
+solr_version: 7.4.0
+solr_checksum: sha1:18ac829bcda555de3ff679a0ccd4e263ed9d49a8

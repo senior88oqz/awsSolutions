@@ -245,3 +245,5 @@ $ ansible-playbook playbook.yml
 ## Reference
 
 1. [Ansible for DevOps](https://github.com/geerlingguy/ansible-for-devops)
+2. [List of Modules](https://docs.ansible.com/ansible/2.5/modules/list_of_all_modules.html)
+3. [Folder Structure](https://leucos.github.io/ansible-files-layout)
