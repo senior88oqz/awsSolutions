@@ -63,7 +63,7 @@ Step 4 - Setup Solr
 
 Step 2 - Initial instance configuration, web application and solr setup
 
-- [ ] [Ansible Setup](OLD/tuorial/)
+- [ ] [Ansible Setup](https://github.com/senior88oqz/awsSolutions/tree/master/OLD/ansible/tutorial)
 - [ ] `ansible-playbook webAppSetup.yml`
 - [ ] `ansible-playbook solrSetup.yml`
 
