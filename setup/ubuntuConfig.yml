@@ -1,0 +1,46 @@
+---
+- hosts: webApp
+  become: yes
+  vars:
+    # Vars can also be passed in via CLI with `--extra-vars="name=value"`.
+    ssh_key: 'public_keys/khris.pub'
+
+  pre_tasks:
+    - name: Update apt cache if needed
+      apt: update_cache=yes cache_valid_time=3600
+
+  tasks:
+    - name: change /etc/hosts as per defined in inventory files
+      shell: echo "$(/sbin/ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1) {{ inventory_hostname }}" >> /etc/hosts
+  #     lineinfile:
+  #       line: "{{ ansible_host }} {{ inventory_hostname }}"
+  #       dest: /etc/hosts
+  # # same as : echo $(hostname -I | cut -d\  -f1) $(hostname) | sudo tee -a /etc/hosts
+
+
+    - name: change /etc/hostname as per defined in inventory files
+      command: hostnamectl set-hostname {{ inventory_hostname }} 
+
+    - name: copy ssh public key to server (single key)
+      authorized_key:
+        key: "{{ lookup('file', ssh_key) }}"
+        state: present
+        user: ubuntu
+
+    # - name: copy ssh public key to server (multiple keys)
+    #   authorized_key:
+    #     key: "{{ item }}"
+    #     user: ubuntu
+    #     with_file:
+    #       - "public_keys/khris.pub"         
+
+    - name: Install system wide packages/tools java, screen
+      apt: name={{ item }} state=present
+      with_items:
+        - openjdk-8-jdk
+        - screen
+        - python3-pip
+
+    # # - name: Enable the histappend option to your shell
+    # #   command: shopt -s histappend
+    # #   become_user: ubuntu

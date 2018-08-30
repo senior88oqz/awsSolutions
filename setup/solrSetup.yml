@@ -1,0 +1,110 @@
+---
+- hosts: webApp
+
+  vars_files:
+  - vars.yml
+
+  pre_tasks:
+    - name: Update apt cache if needed
+      apt: update_cache=yes cache_valid_time=3600
+      become: yes
+
+  # handlers:
+  #   - name: restart solr
+  #     service: name=solr state=restarted
+  #     become: yes
+
+  tasks:
+    - name: Install java 8
+      apt: name=openjdk-8-jdk state=present
+      become: yes
+
+    - name: Download Solr
+      get_url:
+        url: "https://archive.apache.org/dist/lucene/solr/{{ solr_version }}/solr-{{ solr_version }}.tgz"
+        dest: "{{ home_dir }}/solr-{{ solr_version }}.tgz"
+        checksum: "{{ solr_checksum }}"
+
+    - name: Unzip solr to to /opt
+      unarchive: 
+        src: "{{ home_dir }}/solr-{{ solr_version }}.tgz"
+        dest: "{{ solr_dir }}"
+        copy: no
+        creates: "{{ solr_dir }}/solr-{{ solr_version }}/README.txt"
+      become: yes
+
+    - name: Change solr file permissions
+      file:
+        path: "{{ solr_dir }}/solr-{{ solr_version }}"
+        recurse: yes
+        owner: "ubuntu"
+        group: "ubuntu"
+      become: yes
+
+    - name: Set environment variables
+      lineinfile: 
+        dest: /etc/environment
+        line: "{{ item }}"
+        create: yes
+      with_items:
+        - export SOLR_HOME="{{ solr_dir }}/solr-{{ solr_version }}/server/solr"
+      become: yes
+
+
+    - name: Link solr
+      file: 
+        src: "{{ solr_dir }}/solr-{{ solr_version }}/bin/solr"
+        dest: "/usr/bin/solr"
+        state: link
+      become: yes
+
+    # - name: Checkout montebello from codecommit
+    #   git:
+    #     repo: "ssh://git-codecommit.ap-southeast-2.amazonaws.com/v1/repos/montebello"
+    #     dest: "~/pipeline"
+    #     version: "develope"
+    #     accept_hostkey: yes
+
+    - name: Install python3 package
+      pip:
+        name:
+          - pysolr
+          - lxml
+        executable: pip3
+      become: yes
+
+    # - name: Run solr in cloud mode
+    #   shell: "./solr -c"
+    #   args:
+    #     chdir: "{{ solr_dir }}/solr-{{ solr_version }}/bin"
+    #   register: foo
+
+    # - name: Configurate solr
+    #   shell: "source /etc/environment && yes | ./conf.sh"
+    #   args:
+    #     chdir: "{{ home_dir }}/app/scripts/dev"
+    #   register: config_result
+
+    # - name: Index data to solr
+    #   shell: "yes | ./index.sh"
+    #   args:
+    #     chdir: "{{ home_dir }}/app/scripts/dev"
+    #   register: index_result
+      
+  ## run conf.sh index.sh
+
+## running solr as service
+    # - name: Run Solr installation script.
+    #   shell: >
+    #     sudo
+    #     ~/solr-{{ solr_version }}/bin/install_solr_service.sh
+    #     ~/solr-{{ solr_version }}.tgz
+    #     -i /usr/bin
+    #     -d /var/solr
+    #     -u solr
+    #     -s solr
+    #     -p 8983
+        
+    # - name: Ensure solr is started and enabled on boot.
+    #   service: name=solr state=started enabled=yes
+ 

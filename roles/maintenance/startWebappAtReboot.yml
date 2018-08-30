@@ -3,7 +3,7 @@
   become: yes
   vars:
     # Vars can also be passed in via CLI with `--extra-vars="name=value"`.
-    node_apps_location: /home/ubuntu/node
+    app_location: /home/ubuntu/app
     pipeline_location: /home/ubuntu
     solr_version: 7.4.0
 
@@ -27,9 +27,9 @@
       become_user: ubuntu
 
     - name: Start Node.js app
-      command: "forever start {{node_apps_location}}/lexx-core/dist/server/run.js"
+      command: "forever start {{app_location}}/dist/server/run.js"
       # avoid start another running instance
-      when: "forever_list.stdout.find(node_apps_location + '/lexx-core/dist/server/run.js') == -1"
+      when: "forever_list.stdout.find(app_location + '/dist/server/run.js') == -1"
       become_user: ubuntu
 
 
